@@ -10,9 +10,13 @@ import { TiChartPie } from "react-icons/ti";
 import { CgMoreO } from "react-icons/cg";
 import { MdLock } from "react-icons/md";
 import { useState } from 'react';
+import { MdCurrencyExchange } from "react-icons/md";
+import { GiPayMoney } from "react-icons/gi";
+import Modal from './components/general/Modal';
+import TransferForm from './components/transactions/transfers/TransferForm';
+import ExchangeForm from './components/transactions/exchanges/ExchangeForm';
 
 function App() {
-  // Dummy transactions data
   const transactions = [
     { id: 1, name: 'Grocery Store', date: 'Oct 15, 2025', amount: -125.50 },
     { id: 2, name: 'Salary Deposit', date: 'Oct 14, 2025', amount: 3500.00 },
@@ -21,8 +25,9 @@ function App() {
     { id: 5, name: 'Coffee Shop', date: 'Oct 11, 2025', amount: -5.75 }
   ];
 
-  // State for menu anchors (one for each account card)
   const [anchorEl1, setAnchorEl1] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
 
   const handleMenuOpen = (event, setAnchor) => {
     setAnchor(event.currentTarget);
@@ -32,10 +37,40 @@ function App() {
     setAnchor(null);
   };
 
-  const handleMenuAction = (action, setAnchor) => {
-    console.log(`${action} clicked`);
+  const handleModalOpen = (title, setAnchor) => {
+    setModalTitle(title);
+    setModalOpen(true);
     setAnchor(null);
-    // Add your action logic here
+  };
+
+  const handleModalClose = () => {
+    setModalOpen(false);
+    setModalTitle('');
+  };
+
+  const renderModalContent = () => {
+    switch (modalTitle) {
+      case 'Transfer':
+        return (
+          <>
+            <TransferForm handleClose={handleModalClose} />
+          </>
+        );
+      
+      case 'Exchange':
+        return (
+          <> 
+            <ExchangeForm handleClose={handleModalClose} />
+          </>
+        );
+      
+      default:
+        return (
+          <Typography>
+            No content available
+          </Typography>
+        );
+    }
   };
 
   return (
@@ -73,10 +108,8 @@ function App() {
         </Paper>
       </Box>
 
-      {/* Four sections in a row */}
       <Box sx={{ maxWidth: '1800px', margin: '0 auto', mt: 4 }}>
         <Grid container spacing={1}>
-          {/* Left Column - Accounts */}
           <Grid item size={3}>
             <Box sx={{ maxWidth: 430 }}>
               <PageHeader 
@@ -165,11 +198,33 @@ function App() {
                         }
                       }}
                     >
-                      <MenuItem onClick={() => handleMenuAction('Transaction', setAnchorEl1)}>
-                        Transaction
+                      <MenuItem 
+                        onClick={() => handleModalOpen('Transfer', setAnchorEl1)}
+                        sx={{
+                          display: 'flex',
+                          gap: 1.5,
+                          alignItems: 'center',
+                          '&:hover': {
+                            backgroundColor: '#E3F2FD'
+                          }
+                        }}
+                      >
+                        <GiPayMoney size={20} style={{ color: '#00B4D8' }} />
+                        <Typography>Transfer</Typography>
                       </MenuItem>
-                      <MenuItem onClick={() => handleMenuAction('Exchange', setAnchorEl1)}>
-                        Exchange
+                      <MenuItem 
+                        onClick={() => handleModalOpen('Exchange', setAnchorEl1)}
+                        sx={{
+                          display: 'flex',
+                          gap: 1.5,
+                          alignItems: 'center',
+                          '&:hover': {
+                            backgroundColor: '#E3F2FD'
+                          }
+                        }}
+                      >
+                        <MdCurrencyExchange size={20} style={{ color: '#00B4D8' }} />
+                        <Typography>Exchange</Typography>
                       </MenuItem>
                     </Menu>
                   </Paper>
@@ -392,6 +447,13 @@ function App() {
         </Grid>
       </Box>
 
+      <Modal 
+        open={modalOpen} 
+        onClose={handleModalClose}
+        title={modalTitle}
+      >
+        {renderModalContent()}
+      </Modal>
 
     </Layout>
   );
