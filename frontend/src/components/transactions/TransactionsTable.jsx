@@ -24,6 +24,8 @@ const AddRequestButton = styled(Button)(({ theme }) => ({
   color: theme.palette.text.primary,
   borderRadius: "8px",
   boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+  borderLeft: "4px solid #3980e9",
+  borderRight: "4px solid #3980e9",
   textTransform: "none",
   '&:hover': {
     backgroundColor: "#ECEBF9",
@@ -124,14 +126,12 @@ const TransactionsTable = () => {
           startIcon={<SearchOffIcon sx={{ color: 'black', fontSize: '10px' }} />}
           sx={{
             height: '40px',
-            backgroundColor: 'white',
-            border: '1px solid #00B4D8',
             color: 'black',
             fontSize: '12px',
             padding: '8px 16px',
             '&:hover': {
-              backgroundColor: 'white',
-              border: '1px solid #ff0000',
+              borderBottom: '1px solid #ff0000',
+              backgroundColor: '#F3F4F6',
               color: '#ff0000',
             },
           }}
@@ -140,7 +140,7 @@ const TransactionsTable = () => {
         </Button>
       </Box>
       <Box display="flex" justifyContent="flex-end" mb={2}>
-        <AddRequestButton variant="contained" startIcon={<BsFiletypePdf />} onClick={() => handleOpenDialog()}>
+        <AddRequestButton variant="contained" startIcon={<BsFiletypePdf size={20} />} onClick={() => handleOpenDialog()}>
           Export Transactions
         </AddRequestButton>
       </Box>
