@@ -164,7 +164,7 @@ const TransferForm = ({ handleClose }) => {
                     id="currency"
                     name="currency"
                     options={currencies}
-                    getOptionLabel={(option) => `${option.code} - ${option.name} (${option.symbol})`}
+                    getOptionLabel={(option) => `${option.code} - ${option.name}`}
                     value={values.currency}
                     onChange={handleCurrencyChange}
                     onBlur={handleBlur}
