@@ -7,7 +7,7 @@ const Layout = ({ children }) => {
       <Sidebar />
       
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="bg-white shadow-sm border-b border-gray-200 px-4 py-9">
+        <header className="shadow-sm border-b border-gray-200 px-4 py-9" style={{ backgroundColor: '#0d1b2a' }}>
           
         </header>
         
