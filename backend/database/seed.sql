@@ -11,9 +11,9 @@ ALTER SEQUENCE transactions_id_seq RESTART WITH 1;
 ALTER SEQUENCE ledger_entries_id_seq RESTART WITH 1;
 
 INSERT INTO users (username, email, password_hash, first_name, last_name, is_active) VALUES
-('john_doe', 'john.doe@example.com', '$2b$10$rKJ5Z3Z5Z5Z5Z5Z5Z5Z5Z.abcdefghijklmnopqrstuvwxyz1234567', 'John', 'Doe', true),
-('jane_smith', 'jane.smith@example.com', '$2b$10$rKJ5Z3Z5Z5Z5Z5Z5Z5Z5Z.abcdefghijklmnopqrstuvwxyz1234567', 'Jane', 'Smith', true),
-('mike_johnson', 'mike.johnson@example.com', '$2b$10$rKJ5Z3Z5Z5Z5Z5Z5Z5Z5Z.abcdefghijklmnopqrstuvwxyz1234567', 'Mike', 'Johnson', true);
+('john_doe', 'john.doe@example.com', '$2b$10$cuzByqvNujGAdqYGT42XdO6QxKpGgs39edSSBCnHhz6m7nbx5.1L.', 'John', 'Doe', true),
+('jane_smith', 'jane.smith@example.com', '$2b$10$cuzByqvNujGAdqYGT42XdO6QxKpGgs39edSSBCnHhz6m7nbx5.1L.', 'Jane', 'Smith', true),
+('mike_johnson', 'mike.johnson@example.com', '$2b$10$cuzByqvNujGAdqYGT42XdO6QxKpGgs39edSSBCnHhz6m7nbx5.1L.', 'Mike', 'Johnson', true);
 
 INSERT INTO accounts (user_id, account_name, currency, balance, account_type, is_locked) VALUES
 (1, 'Main Account', 'USD', 1000.00, 'main', false),
