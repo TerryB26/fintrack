@@ -20,7 +20,7 @@ const Login = () => {
           }}
         >
           <Box sx={{ mb: 3, textAlign: 'center' }}>
-            <Typography
+                        <Typography
               variant="h4"
               sx={{
                 fontWeight: 700,
@@ -30,6 +30,18 @@ const Login = () => {
             >
               FinTrack
             </Typography>
+            <Box
+              component="img"
+              src="/finance-animate.svg"
+              alt="FinTrack Logo"
+              sx={{
+                width: 220,
+                height: 220,
+                mx: 'auto',
+                mb: 2,
+              }}
+            />
+
             <Typography
               variant="body1"
               sx={{
