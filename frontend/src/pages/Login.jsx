@@ -9,7 +9,6 @@ const Login = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #00B4D8 0%, #0077B6 100%)',
       }}
     >
       <Container maxWidth="sm">
