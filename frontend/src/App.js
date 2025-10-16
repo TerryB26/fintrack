@@ -1,6 +1,6 @@
 import './App.css';
 import Layout from './components/Layout';
-import { Box, Grid, Typography, Paper, IconButton, Menu, MenuItem } from '@mui/material';
+import { Box, Grid, Typography, Paper, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 import PageHeader from './components/general/PageHeader';
 import { MdAccountBalance } from "react-icons/md";
 import { FaPiggyBank } from "react-icons/fa6";
@@ -15,6 +15,9 @@ import { GiPayMoney } from "react-icons/gi";
 import Modal from './components/general/Modal';
 import TransferForm from './components/transactions/transfers/TransferForm';
 import ExchangeForm from './components/transactions/exchanges/ExchangeForm';
+import { RiExchange2Line } from "react-icons/ri";
+import { IoLogoEuro } from "react-icons/io";
+import { IoLogoUsd } from "react-icons/io";
 
 function App() {
   const transactions = [
@@ -26,6 +29,7 @@ function App() {
   ];
 
   const [anchorEl1, setAnchorEl1] = useState(null);
+  const [anchorEl2, setAnchorEl2] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
 
@@ -72,6 +76,9 @@ function App() {
         );
     }
   };
+
+  //add confirmation swal for switching accounts  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 
   return (
     <Layout>
@@ -164,21 +171,83 @@ function App() {
                     >
                       Manage your financial accounts and track their performance.
                     </Typography>
-                    <IconButton
-                      onClick={(e) => handleMenuOpen(e, setAnchorEl1)}
+                    <Box sx={{ position: 'absolute', bottom: 5, right: 5, display: 'flex', gap: 1 }}>
+                      <Tooltip title="Transactions" arrow placement="top">
+                        <IconButton
+                          onClick={(e) => handleMenuOpen(e, setAnchorEl1)}
+                          sx={{
+                            color: '#6f2dbd',
+                            '&:hover': {
+                              color: '#320d6d',
+                              backgroundColor: 'rgba(0, 180, 216, 0.1)'
+                            }
+                          }}
+                        >
+                          <CgMoreO size={22} />
+                        </IconButton>
+                      </Tooltip>
+
+                      <Tooltip title="Switch Accounts" arrow placement="top">
+                        <IconButton
+                          onClick={(e) => handleMenuOpen(e, setAnchorEl2)}
+                          sx={{
+                            color: '#6f2dbd',
+                            '&:hover': {
+                              color: 'black',
+                              backgroundColor: 'rgba(16, 185, 129, 0.1)'
+                            }
+                          }}
+                        >
+                          <RiExchange2Line size={22} />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                    <Menu
+                      anchorEl={anchorEl2}
+                      open={Boolean(anchorEl2)}
+                      onClose={() => handleMenuClose(setAnchorEl2)}
+                      anchorOrigin={{
+                        vertical: 'bottom',
+                        horizontal: 'right',
+                      }}
+                      transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'right',
+                      }}
                       sx={{
-                        position: 'absolute',
-                        bottom: 5,
-                        right: 5,
-                        color: '#415A77',
-                        '&:hover': {
-                          color: '#00B4D8',
-                          backgroundColor: 'rgba(0, 180, 216, 0.1)'
+                        '& .MuiPaper-root': {
+                          borderLeft: "4px solid #6f2dbd",
+                          borderRadius: 2
                         }
                       }}
                     >
-                      <CgMoreO size={24} />
-                    </IconButton>
+                      <MenuItem 
+                        sx={{
+                          display: 'flex',
+                          gap: 1.5,
+                          alignItems: 'center',
+                          '&:hover': {
+                            backgroundColor: '#E3F2FD'
+                          }
+                        }}
+                      >
+                        <IoLogoEuro size={20} style={{ color: '#6f2dbd' }} />
+                        <Typography>EURO</Typography>
+                      </MenuItem>
+                      <MenuItem 
+                        sx={{
+                          display: 'flex',
+                          gap: 1.5,
+                          alignItems: 'center',
+                          '&:hover': {
+                            backgroundColor: '#E3F2FD'
+                          }
+                        }}
+                      >
+                        <IoLogoUsd size={20} style={{ color: '#6f2dbd' }} />
+                        <Typography>USD</Typography>
+                      </MenuItem>
+                    </Menu>
                     <Menu
                       anchorEl={anchorEl1}
                       open={Boolean(anchorEl1)}
