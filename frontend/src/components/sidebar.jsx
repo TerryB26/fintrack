@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
 import { CiCircleChevRight } from "react-icons/ci";
 import { CiCircleChevLeft } from "react-icons/ci";
+import { useAuth } from '../context/AuthContext';
 
 const Sidebar = () => {
+    const { user, logout } = useAuth();
+    console.log("🚀 ~ Sidebar ~ user:", user)
+
+    const {username , email} = user || {};
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const toggleSidebar = () => {
@@ -64,8 +69,8 @@ const Sidebar = () => {
           </div>
           {!isCollapsed && (
             <div className="ml-3">
-              <p className="text-sm font-medium">User</p>
-              <p className="text-xs text-gray-500">user@example.com</p>
+              <p className="text-sm font-medium">{username}</p>
+              <p className="text-xs text-gray-500">{email}</p>
             </div>
           )}
         </div>
