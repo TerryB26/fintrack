@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button, Table, TableBody, Typography, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, TablePagination, Box, IconButton, Tooltip, CircularProgress, Divider } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import SearchOffIcon from '@mui/icons-material/SearchOff';
@@ -48,7 +48,7 @@ const TransactionsTable = ({user}) => {
   const [filterType, setFilterType] = useState('all');
   const [filterCurrency, setFilterCurrency] = useState('all');
 
-  const fetchTransactions = async () => {
+  const fetchTransactions = useCallback(async () => {
     if (!id) return;
     
     setIsLoading(true);
@@ -63,16 +63,15 @@ const TransactionsTable = ({user}) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchTransactions();
-  }, [id]);
+  }, [id, fetchTransactions]);
 
-  console.log("🚀 ~ TransactionsTable ~ transactions:", transactions)
+  //console.log("🚀 ~ TransactionsTable ~ transactions:", transactions)
 
   const filteredRequests = transactions.filter(transaction => {
-    // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       const matchesSearch = (
@@ -85,12 +84,10 @@ const TransactionsTable = ({user}) => {
       if (!matchesSearch) return false;
     }
 
-    // Type filter
     if (filterType !== 'all') {
       if (transaction.transactionType !== filterType) return false;
     }
 
-    // Currency filter
     if (filterCurrency !== 'all') {
       const transactionCurrency = transaction.currency || transaction.fromCurrency || transaction.toCurrency;
       if (transactionCurrency !== filterCurrency) return false;
@@ -331,6 +328,7 @@ const TransactionsTable = ({user}) => {
             <option value="deposit">Deposit</option>
             <option value="withdrawal">Withdrawal</option>
             <option value="exchange">Exchange</option>
+            <option value="transfer">Transfer</option>
           </TextField>
 
           <TextField

@@ -2,6 +2,7 @@ const API_BASE_URL = 'http://localhost:5000/api';
 
 const getAuthHeader = () => {
   const token = localStorage.getItem('token');
+  console.log('🔑 Token from localStorage:', token ? 'exists' : 'null');
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
@@ -49,7 +50,6 @@ export const accountsAPI = {
       throw new Error('Failed to fetch accounts');
     }
     const data = await response.json();
-    // If data.data exists and is an array, return it, else return data (array)
     if (Array.isArray(data.data)) return data.data;
     if (Array.isArray(data.accounts)) return data.accounts;
     if (Array.isArray(data)) return data;
@@ -125,5 +125,50 @@ export const transactionsAPI = {
     }
     
     return response.json();
+  },
+};
+
+export const usersAPI = {
+  searchUsers: async (query) => {
+    const params = new URLSearchParams();
+    if (query) params.append('q', query);
+    
+    const url = `${API_BASE_URL}/users/search?${params}`;
+    
+    const response = await fetch(url, {
+      headers: {
+        ...getAuthHeader(),
+      },
+    });
+    
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.log('❌ Error response:', errorText);
+      throw new Error('Failed to search users');
+    }
+    
+    const data = await response.json();
+    return data;
+  },
+
+  getUserAccounts: async (userId) => {
+    
+    const response = await fetch(`${API_BASE_URL}/users/${userId}/accounts`, {
+      headers: {
+        ...getAuthHeader(),
+      },
+    });
+    
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.log('❌ Error response:', errorText);
+      throw new Error('Failed to get user accounts');
+    }
+    
+    const data = await response.json();
+    console.log('✅ Get user accounts response:', data);
+    return data;
   },
 };

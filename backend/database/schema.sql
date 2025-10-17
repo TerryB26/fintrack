@@ -1,7 +1,6 @@
 -- FinTrack Database Schema
 -- Double-Entry Ledger System for Financial Integrity
 
--- Drop existing tables if they exist (for fresh setup)
 DROP TABLE IF EXISTS ledger_entries CASCADE;
 DROP TABLE IF EXISTS transactions CASCADE;
 DROP TABLE IF EXISTS accounts CASCADE;
@@ -30,9 +29,9 @@ CREATE TABLE accounts (
     uuid UUID DEFAULT uuid_generate_v4() UNIQUE NOT NULL,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     account_name VARCHAR(100) NOT NULL,
-    currency VARCHAR(3) NOT NULL, -- USD, EUR, etc.
+    currency VARCHAR(3) NOT NULL, 
     balance DECIMAL(15, 2) DEFAULT 0.00,
-    account_type VARCHAR(50) NOT NULL, -- 'main', 'savings', 'fixed'
+    account_type VARCHAR(50) NOT NULL,
     is_locked BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -44,15 +43,15 @@ CREATE TABLE transactions (
     id SERIAL PRIMARY KEY,
     uuid UUID DEFAULT uuid_generate_v4() UNIQUE NOT NULL,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    transaction_type VARCHAR(20) NOT NULL, -- 'transfer', 'exchange', 'deposit', 'withdrawal'
+    transaction_type VARCHAR(20) NOT NULL, 
     description TEXT,
     amount DECIMAL(15, 2) NOT NULL,
     currency VARCHAR(3) NOT NULL,
     from_account_id INTEGER REFERENCES accounts(id),
     to_account_id INTEGER REFERENCES accounts(id),
-    exchange_rate DECIMAL(10, 6), -- For currency exchanges
-    converted_amount DECIMAL(15, 2), -- Amount after exchange
-    status VARCHAR(20) DEFAULT 'completed', -- 'pending', 'completed', 'failed', 'cancelled'
+    exchange_rate DECIMAL(10, 6), 
+    converted_amount DECIMAL(15, 2), 
+    status VARCHAR(20) DEFAULT 'completed', 
     transaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT check_amount_positive CHECK (amount > 0),
@@ -60,14 +59,13 @@ CREATE TABLE transactions (
 );
 
 -- Ledger Entries Table (Double-entry bookkeeping)
--- Every transaction creates balanced entries (sum of amounts must equal zero)
 CREATE TABLE ledger_entries (
     id SERIAL PRIMARY KEY,
     uuid UUID DEFAULT uuid_generate_v4() UNIQUE NOT NULL,
     transaction_id INTEGER NOT NULL REFERENCES transactions(id) ON DELETE CASCADE,
     account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
-    amount DECIMAL(15, 2) NOT NULL, -- Positive for debit, negative for credit
-    entry_type VARCHAR(10) NOT NULL, -- 'debit' or 'credit'
+    amount DECIMAL(15, 2) NOT NULL,
+    entry_type VARCHAR(10) NOT NULL,
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT check_entry_type CHECK (entry_type IN ('debit', 'credit'))
@@ -92,7 +90,6 @@ CREATE INDEX idx_ledger_account_id ON ledger_entries(account_id);
 CREATE OR REPLACE FUNCTION update_account_balance()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Update the account balance based on ledger entry
     UPDATE accounts
     SET balance = balance + NEW.amount,
         updated_at = CURRENT_TIMESTAMP
@@ -102,39 +99,40 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Trigger to automatically update account balances
 CREATE TRIGGER trigger_update_account_balance
 AFTER INSERT ON ledger_entries
 FOR EACH ROW
 EXECUTE FUNCTION update_account_balance();
 
--- Function to validate double-entry consistency
 CREATE OR REPLACE FUNCTION validate_ledger_balance()
 RETURNS TRIGGER AS $$
 DECLARE
     total_balance DECIMAL(15, 2);
+    entry_count INTEGER;
 BEGIN
-    -- Check if the sum of all ledger entries for this transaction equals zero
-    SELECT COALESCE(SUM(amount), 0) INTO total_balance
+    SELECT COUNT(*) INTO entry_count
     FROM ledger_entries
     WHERE transaction_id = NEW.transaction_id;
     
-    -- Allow small rounding errors (0.01)
-    IF ABS(total_balance) > 0.01 THEN
-        RAISE EXCEPTION 'Ledger entries must balance to zero. Current balance: %', total_balance;
+    IF entry_count >= 2 THEN
+        SELECT COALESCE(SUM(amount), 0) INTO total_balance
+        FROM ledger_entries
+        WHERE transaction_id = NEW.transaction_id;
+        
+        IF ABS(total_balance) > 0.01 THEN
+            RAISE EXCEPTION 'Ledger entries must balance to zero. Current balance: %', total_balance;
+        END IF;
     END IF;
     
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
--- Trigger to validate ledger balance after insert
 CREATE TRIGGER trigger_validate_ledger_balance
 AFTER INSERT ON ledger_entries
 FOR EACH ROW
 EXECUTE FUNCTION validate_ledger_balance();
 
--- Function to update timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -143,7 +141,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Triggers to update timestamps
 CREATE TRIGGER update_users_timestamp
 BEFORE UPDATE ON users
 FOR EACH ROW
@@ -154,7 +151,6 @@ BEFORE UPDATE ON accounts
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
 
--- View for transaction history with account details
 CREATE OR REPLACE VIEW transaction_history AS
 SELECT 
     t.id,

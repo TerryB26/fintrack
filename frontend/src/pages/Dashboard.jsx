@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Grid, Typography, Paper, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 import PageHeader from '../components/general/PageHeader';
 import { MdAccountBalance } from "react-icons/md";
@@ -38,7 +38,7 @@ const Dashboard = ({ user }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
 
-  const fetchTransactions = async () => {
+  const fetchTransactions = useCallback(async () => {
     if (!id) return;
     
     setIsLoading(true);
@@ -52,17 +52,15 @@ const Dashboard = ({ user }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [id]);
 
-  const fetchAccountBalances = async () => {
+  const fetchAccountBalances = useCallback(async () => {
     if (!id) return;
     
     setBalanceLoading(true);
     try {
       const response = await accountsAPI.getAccounts();
-      // console.log("🚀 ~ fetchAccountBalances ~ response:", response);
       const accounts = response || [];
-      // console.log("🚀 ~ fetchAccountBalances ~ accounts:", accounts);
       
       const balances = accounts.reduce((acc, account) => {
         const balance = parseFloat(account.balance) || 0;
@@ -76,19 +74,18 @@ const Dashboard = ({ user }) => {
         return acc;
       }, { EUR: 0, USD: 0, total: 0 });
       
-      //console.log("🚀 ~ fetchAccountBalances ~ calculated balances:", balances);
       setAccountBalances(balances);
     } catch (error) {
       console.error('Error fetching account balances:', error);
     } finally {
       setBalanceLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchTransactions();
     fetchAccountBalances();
-  }, [id]);
+  }, [id, fetchTransactions, fetchAccountBalances]);
 
   const filteredTransactions = transactions.filter(transaction => {
     if (selectedAccount === 'ALL') return true;
@@ -153,6 +150,7 @@ const Dashboard = ({ user }) => {
 
   const handleModalClose = () => {
     setModalOpen(false);
+    refreshData();
     setModalTitle('');
   };
 
