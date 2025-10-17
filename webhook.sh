@@ -115,7 +115,31 @@ cd ..
 
 # Check if frontend build exists
 if [ -d "frontend/build" ] && [ "$(ls -A frontend/build)" ]; then
-    echo "✅ Using pre-built frontend from repository..."
+    echo "✅ Found frontend build in repository..."
+    # Detect placeholder build (the minimal CRA landing page with "Get Started") and force rebuild
+    if grep -Rqs "Get Started" frontend/build/static/js || grep -Rqs "Welcome to your financial tracking application" frontend/build/static/js; then
+        echo "⚠️  Detected placeholder frontend build. Rebuilding with current source..."
+        cd frontend
+        echo "📦 Installing frontend dependencies..."
+        npm install
+        echo "🔨 Building frontend (this may take a while)..."
+        if NODE_OPTIONS="--max-old-space-size=2048" npm run build; then
+            echo "✅ Frontend rebuild completed successfully"
+        else
+            echo "❌ Frontend rebuild failed. Trying with more memory..."
+            if NODE_OPTIONS="--max-old-space-size=4096" npm run build; then
+                echo "✅ Frontend rebuild completed successfully"
+            else
+                echo "❌ Frontend rebuild failed. Please build locally and push to GitHub."
+                echo "💡 On your local machine run:"
+                echo "   cd frontend && npm install && npm run build && git add build && git commit -m 'Push correct frontend build' && git push origin main"
+                exit 1
+            fi
+        fi
+        cd ..
+    else
+        echo "✅ Using existing pre-built frontend"
+    fi
 else
     echo "⚠️  Pre-built frontend not found. Building frontend..."
     cd frontend
@@ -250,5 +274,6 @@ echo "🌐 Frontend: http://185.220.204.117:1452"
 echo "🔧 Backend API: http://185.220.204.117:1453"
 echo ""
 echo "🧪 Quick health check:"
-curl -s http://localhost:1453/api/auth/me > /dev/null && echo "✅ Backend is responding" || echo "❌ Backend health check failed"
+# Use non-authenticated health endpoint
+curl -s http://localhost:1453/api/health > /dev/null && echo "✅ Backend is responding" || echo "❌ Backend health check failed"
 curl -s http://localhost:1452 > /dev/null && echo "✅ Frontend is responding" || echo "❌ Frontend health check failed"
