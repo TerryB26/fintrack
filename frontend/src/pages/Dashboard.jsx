@@ -221,7 +221,7 @@ const Dashboard = ({ user }) => {
 
       <Box sx={{ maxWidth: '1800px', margin: '0 auto', mt: 4 }}>
         <Grid container spacing={1}>
-          <Grid item size={3}>
+          <Grid size={3}>
             <Box sx={{ maxWidth: 430 }}>
               <PageHeader 
                 title="Accounts" 
@@ -234,7 +234,7 @@ const Dashboard = ({ user }) => {
             
             <Box sx={{ mt: 3 }}>
               <Grid container spacing={4} direction="column" alignItems="start">
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <Paper
                     elevation={3}
                     sx={{
@@ -461,7 +461,7 @@ const Dashboard = ({ user }) => {
                   </Paper>
                 </Grid>
                 
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <Paper
                     elevation={3}
                     sx={{
@@ -507,7 +507,7 @@ const Dashboard = ({ user }) => {
                   </Paper>
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <Paper
                     elevation={3}
                     sx={{
@@ -557,7 +557,7 @@ const Dashboard = ({ user }) => {
           </Grid>
 
           {/* Right Column - Overview */}
-          <Grid item size={9}>
+          <Grid size={9}>
             <PageHeader 
               title="Overview" 
               subtitle="Financial summary and insights"
@@ -569,7 +569,7 @@ const Dashboard = ({ user }) => {
             <Box sx={{ mt: 3 }}>
               <Grid container spacing={2}>
 
-                <Grid item size={5}>
+                <Grid size={5}>
                   <Paper
                     elevation={3}
                     sx={{
@@ -667,7 +667,7 @@ const Dashboard = ({ user }) => {
                   </Paper>
                 </Grid>
 
-                <Grid item size={7}>
+                <Grid size={7}>
                   <Paper
                     elevation={3}
                     sx={{

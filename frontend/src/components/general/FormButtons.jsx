@@ -48,7 +48,7 @@ const FormButtons = ({ handleClose, handleClearForm, submitting, hideClose = fal
       )}
       {showButtons && (
         <Grid container spacing={4} sx={{ pt: 2 }}>
-          <Grid item xs={12} sm={12} sx={{
+          <Grid size={{ xs: 12, sm: 12 }} sx={{
             display: "flex",
             justifyContent: "start"
           }}>

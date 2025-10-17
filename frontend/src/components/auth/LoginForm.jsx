@@ -49,7 +49,7 @@ const LoginForm = () => {
         <Box sx={{ flexGrow: 1 }}>
           <Grid container spacing={2}>
             {error && (
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Alert 
                   severity="error"
                   sx={{
@@ -67,7 +67,7 @@ const LoginForm = () => {
               </Grid>
             )}
 
-            <Grid item size={12}>
+            <Grid size={12}>
               <FormGroup>
                 <FormControl variant="outlined" fullWidth>
                   <TextField
@@ -126,7 +126,7 @@ const LoginForm = () => {
               </FormGroup>
             </Grid>
 
-            <Grid item size={12}>
+            <Grid size={12}>
               <FormGroup>
                 <FormControl variant="outlined" fullWidth>
                   <TextField
@@ -196,7 +196,7 @@ const LoginForm = () => {
               </FormGroup>
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
                 <Button
                   type="submit"

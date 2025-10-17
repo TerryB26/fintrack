@@ -216,7 +216,7 @@ const ExchangeForm = ({ handleClose, user, refreshData }) => {
           ) : (
             <Grid container spacing={2} sx={{ p: 0 }}>
               {/* Exchange Rate Display */}
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Alert 
                   severity="info" 
                   icon={<MdCurrencyExchange size={20} />}
@@ -238,7 +238,7 @@ const ExchangeForm = ({ handleClose, user, refreshData }) => {
               </Grid>
 
               {/* From Account Dropdown */}
-              <Grid item size={12}>
+              <Grid size={12}>
                 <FormGroup>
                   <RequiredField title="From Account" boldTitle={true}/>
                   <FormControl variant="outlined" fullWidth>
@@ -273,7 +273,7 @@ const ExchangeForm = ({ handleClose, user, refreshData }) => {
               </Grid>
 
               {/* To Account Dropdown */}
-              <Grid item size={12}>
+              <Grid size={12}>
                 <FormGroup>
                   <RequiredField title="To Account" boldTitle={true}/>
                   <FormControl variant="outlined" fullWidth>
@@ -308,7 +308,7 @@ const ExchangeForm = ({ handleClose, user, refreshData }) => {
               </Grid>
 
               {/* Amount Field */}
-              <Grid item size={12}>
+              <Grid size={12}>
                 <FormGroup>
                   <RequiredField title="Amount" boldTitle={true}/>
                   <TextField
@@ -330,7 +330,7 @@ const ExchangeForm = ({ handleClose, user, refreshData }) => {
 
               {/* Converted Amount Display */}
               {values.amount && values.fromAccount && values.toAccount && (
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <Alert severity="success" sx={{ mt: 2, backgroundColor: '#F0FDF4', color: '#166534' }}>
                     <Typography variant="body2">
                       {values.amount} {values.fromAccount.currency} = {convertedAmount.toFixed(2)} {values.toAccount.currency}

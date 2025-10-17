@@ -251,7 +251,7 @@ const TransferForm = ({ handleClose, user, refreshData }) => {
         <Box sx={{ flexGrow: 1 }} >
           <Grid container spacing={2} sx={{ p: 0 }}>
             
-            <Grid item size={8}>
+            <Grid size={8}>
               <FormGroup>
                 <RequiredField title="From Account" boldTitle={true}/>
                 <FormControl variant="outlined" fullWidth>
@@ -288,7 +288,7 @@ const TransferForm = ({ handleClose, user, refreshData }) => {
               </FormGroup>
             </Grid>
 
-            <Grid item size={8}>
+            <Grid size={8}>
               <FormGroup>
                 <RequiredField title="Recipient" boldTitle={true}/>
                 <FormControl variant="outlined" fullWidth>
@@ -321,7 +321,7 @@ const TransferForm = ({ handleClose, user, refreshData }) => {
             </Grid>
 
             {values.recipient && (
-              <Grid item size={8}>
+              <Grid size={8}>
                 <FormGroup>
                   <RequiredField title="Recipient Account" boldTitle={true}/>
                   <FormControl variant="outlined" fullWidth>
@@ -349,7 +349,7 @@ const TransferForm = ({ handleClose, user, refreshData }) => {
               </Grid>
             )}
 
-            <Grid item size={8}>
+            <Grid size={8}>
               <FormGroup>
                 <RequiredField title="Amount" boldTitle={true}/>
                 <FormControl variant="outlined" fullWidth>
