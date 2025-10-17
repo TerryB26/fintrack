@@ -175,6 +175,9 @@ export class TransactionsService {
         ? Number(targetAmount)
         : amount * exchangeRate;
 
+      // Round converted to 2 decimals for ledger integrity
+      convertedAmount = Math.round(convertedAmount * 100) / 100;
+
       const transactionResult = await client.query(
         `INSERT INTO transactions (user_id, transaction_type, description, amount, currency, from_account_id, to_account_id, exchange_rate, converted_amount, status)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)

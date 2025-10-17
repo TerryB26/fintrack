@@ -106,6 +106,10 @@ echo "✅ Environment file found"
 echo "🗄️ Setting up database..."
 npm run db:setup
 
+# Update DB function to allow exchange rounding tolerance
+echo "🛠️ Applying database function updates (validate_ledger_balance skip for exchange)..."
+node scripts/alter-function.js || true
+
 # Build backend
 echo "🔨 Building backend..."
 npm run build

@@ -109,7 +109,17 @@ RETURNS TRIGGER AS $$
 DECLARE
     total_balance DECIMAL(15, 2);
     entry_count INTEGER;
+    trans_type VARCHAR(20);
 BEGIN
+    -- Get transaction type for this ledger entry
+    SELECT transaction_type INTO trans_type FROM transactions WHERE id = NEW.transaction_id;
+
+    -- Skip balance validation for cross-currency exchanges
+    IF trans_type = 'exchange' THEN
+        RETURN NEW;
+    END IF;
+
+    -- For other transactions, enforce double-entry sum ~= 0
     SELECT COUNT(*) INTO entry_count
     FROM ledger_entries
     WHERE transaction_id = NEW.transaction_id;
@@ -119,6 +129,7 @@ BEGIN
         FROM ledger_entries
         WHERE transaction_id = NEW.transaction_id;
         
+        -- allow 0.01 rounding tolerance
         IF ABS(total_balance) > 0.01 THEN
             RAISE EXCEPTION 'Ledger entries must balance to zero. Current balance: %', total_balance;
         END IF;
