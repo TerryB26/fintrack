@@ -76,7 +76,7 @@ const Dashboard = ({ user }) => {
         return acc;
       }, { EUR: 0, USD: 0, total: 0 });
       
-      console.log("🚀 ~ fetchAccountBalances ~ calculated balances:", balances);
+      //console.log("🚀 ~ fetchAccountBalances ~ calculated balances:", balances);
       setAccountBalances(balances);
     } catch (error) {
       console.error('Error fetching account balances:', error);
