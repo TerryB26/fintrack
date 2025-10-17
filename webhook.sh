@@ -148,14 +148,19 @@ else
     cd ..
 fi
 
-# Create PM2 ecosystem file if it doesn't exist
-if [ ! -f ecosystem.config.js ]; then
-    echo "📝 Creating PM2 ecosystem configuration..."
-    
-    # Install dotenv at root level for ecosystem.config.js
-    npm install dotenv
-    
-    cat > ecosystem.config.js << 'EOF'
+# Remove old ecosystem config if it exists (to ensure we use the latest version)
+if [ -f ecosystem.config.js ]; then
+    echo "�️ Removing old PM2 ecosystem configuration..."
+    rm ecosystem.config.js
+fi
+
+# Create PM2 ecosystem file
+echo "📝 Creating PM2 ecosystem configuration..."
+
+# Install dotenv at root level for ecosystem.config.js
+npm install dotenv
+
+cat > ecosystem.config.js << 'EOF'
 require('dotenv').config({ path: './backend/.env' });
 
 module.exports = {
@@ -197,7 +202,6 @@ module.exports = {
   ]
 };
 EOF
-fi
 
 # Install serve globally for serving the React build
 echo "📦 Installing serve for frontend..."
