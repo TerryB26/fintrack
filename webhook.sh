@@ -90,6 +90,18 @@ echo "📦 Installing backend dependencies..."
 cd backend
 npm install
 
+# Verify .env file exists
+if [ ! -f .env ]; then
+    echo "❌ Error: backend/.env file not found!"
+    echo "📝 Please create backend/.env with the following variables:"
+    echo "   DATABASE_URL=\"postgresql://user:password@host:port/database\""
+    echo "   JWT_SECRET=\"your-secret-key\""
+    echo "   PORT=1453"
+    echo "   CORS_ORIGIN=\"http://185.220.204.117:1452\""
+    exit 1
+fi
+echo "✅ Environment file found"
+
 # Set up database
 echo "🗄️ Setting up database..."
 npm run db:setup
@@ -139,20 +151,26 @@ fi
 # Create PM2 ecosystem file if it doesn't exist
 if [ ! -f ecosystem.config.js ]; then
     echo "📝 Creating PM2 ecosystem configuration..."
+    
+    # Install dotenv at root level for ecosystem.config.js
+    npm install dotenv
+    
     cat > ecosystem.config.js << 'EOF'
+require('dotenv').config({ path: './backend/.env' });
+
 module.exports = {
   apps: [
     {
       name: 'fintrack-backend',
       script: 'backend/dist/main.js',
+      cwd: './',
       instances: 1,
       autorestart: true,
       watch: false,
       max_memory_restart: '1G',
+      env_file: './backend/.env',
       env: {
-        NODE_ENV: 'production',
-        PORT: 1453,
-        CORS_ORIGIN: 'http://185.220.204.117:1452'
+        NODE_ENV: 'production'
       },
       error_file: './logs/backend-error.log',
       out_file: './logs/backend-out.log',
@@ -162,7 +180,8 @@ module.exports = {
     {
       name: 'fintrack-frontend',
       script: 'serve',
-      args: '-s frontend/build -l 1452',
+      args: '-s frontend/build -p 1452',
+      cwd: './',
       instances: 1,
       autorestart: true,
       watch: false,
