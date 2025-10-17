@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+/* eslint-disable no-unused-vars */
+import React, { useState, useEffect } from 'react';
 import { Box, Grid, Typography, Paper, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 import PageHeader from '../components/general/PageHeader';
 import { MdAccountBalance } from "react-icons/md";
 import { FaPiggyBank } from "react-icons/fa6";
 import TinyLineChart from '../components/charts/TinyLineChart';
+import Piechart from '../components/charts/Piechart';
 import { MdOutlineRssFeed } from "react-icons/md";
 import { TiChartPie } from "react-icons/ti";
 import { CgMoreO } from "react-icons/cg";
@@ -16,21 +18,124 @@ import ExchangeForm from '../components/transactions/exchanges/ExchangeForm';
 import { RiExchange2Line } from "react-icons/ri";
 import { IoLogoEuro } from "react-icons/io";
 import { IoLogoUsd } from "react-icons/io";
+import CircularProgressWithLabel from '../components/general/CircularProgressWithLabel';
+import { transactionsAPI, accountsAPI } from '../services/api';
+import { IoWallet } from "react-icons/io5";
 
 
-const Dashboard = () => {
-  const transactions = [
-    { id: 1, name: 'Grocery Store', date: 'Oct 15, 2025', amount: -125.50 },
-    { id: 2, name: 'Salary Deposit', date: 'Oct 14, 2025', amount: 3500.00 },
-    { id: 3, name: 'Gas Station', date: 'Oct 13, 2025', amount: -45.00 },
-    { id: 4, name: 'Netflix Subscription', date: 'Oct 12, 2025', amount: -15.99 },
-    { id: 5, name: 'Coffee Shop', date: 'Oct 11, 2025', amount: -5.75 }
-  ];
+const Dashboard = ({ user }) => {
+  const { id }  = user || {};
+  
+  const [transactions, setTransactions] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState('ALL'); 
+  const [accountBalances, setAccountBalances] = useState({ EUR: 0, USD: 0, total: 0 });
+  const [balanceLoading, setBalanceLoading] = useState(false);
 
   const [anchorEl1, setAnchorEl1] = useState(null);
   const [anchorEl2, setAnchorEl2] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
+
+  const fetchTransactions = async () => {
+    if (!id) return;
+    
+    setIsLoading(true);
+    setIsError(false);
+    try {
+      const response = await transactionsAPI.getTransactions({ limit: 100, page: 1 });
+      setTransactions(response.data || []);
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
+      setIsError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchAccountBalances = async () => {
+    if (!id) return;
+    
+    setBalanceLoading(true);
+    try {
+      const response = await accountsAPI.getAccounts();
+      console.log("🚀 ~ fetchAccountBalances ~ response:", response);
+      const accounts = response.data || [];
+      console.log("🚀 ~ fetchAccountBalances ~ accounts:", accounts);
+      
+      const balances = accounts.reduce((acc, account) => {
+        const balance = parseFloat(account.balance) || 0;
+        
+        if (account.currency === 'EUR') {
+          acc.EUR += balance;
+        } else if (account.currency === 'USD') {
+          acc.USD += balance;
+        }
+        acc.total += balance;
+        return acc;
+      }, { EUR: 0, USD: 0, total: 0 });
+      
+      console.log("🚀 ~ fetchAccountBalances ~ calculated balances:", balances);
+      setAccountBalances(balances);
+    } catch (error) {
+      console.error('Error fetching account balances:', error);
+    } finally {
+      setBalanceLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTransactions();
+    fetchAccountBalances();
+  }, [id]);
+
+  const filteredTransactions = transactions.filter(transaction => {
+    if (selectedAccount === 'ALL') return true;
+    if (selectedAccount === 'EUR') {
+      return transaction.currency === 'EUR' || 
+             transaction.fromCurrency === 'EUR' || 
+             transaction.toCurrency === 'EUR';
+    }
+    if (selectedAccount === 'USD') {
+      return transaction.currency === 'USD' || 
+             transaction.fromCurrency === 'USD' || 
+             transaction.toCurrency === 'USD';
+    }
+    return true;
+  });
+
+  const getSpendingData = () => {
+    if (selectedAccount === 'ALL') return [];
+    
+    const withdrawals = filteredTransactions.filter(t => 
+      t.transactionType === 'withdrawal' || t.transactionType === 'exchange'
+    );
+
+    const spendingMap = withdrawals.reduce((acc, transaction) => {
+      const category = transaction.description || 'Other';
+      const amount = Math.abs(parseFloat(transaction.amount) || 0);
+      
+      if (acc[category]) {
+        acc[category] += amount;
+      } else {
+        acc[category] = amount;
+      }
+      return acc;
+    }, {});
+
+    return Object.entries(spendingMap).map(([name, value]) => ({
+      name,
+      value: parseFloat(value.toFixed(2))
+    }));
+  };
+
+  const spendingData = getSpendingData();
+
+  const handleAccountSwitch = (account) => {
+    setSelectedAccount(account);
+    handleMenuClose(setAnchorEl2);
+  };
 
   const handleMenuOpen = (event, setAnchor) => {
     setAnchor(event.currentTarget);
@@ -50,6 +155,8 @@ const Dashboard = () => {
     setModalOpen(false);
     setModalTitle('');
   };
+
+  // console.log("🚀 ~ Dashboard ~ transactions:", transactions)
 
   const renderModalContent = () => {
     switch (modalTitle) {
@@ -157,17 +264,48 @@ const Dashboard = () => {
                         color: '#00B4D8'
                       }}
                     >
-                      Main Account
+                      {selectedAccount === 'ALL' ? 'All Accounts' : selectedAccount === 'EUR' ? 'EUR Account' : 'USD Account'}
                     </Typography>
+                    
+                    {selectedAccount !== 'ALL' && (
+                      balanceLoading ? (
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            fontWeight: 'bold',
+                            mb: 1,
+                            color: '#415A77'
+                          }}
+                        >
+                          Loading...
+                        </Typography>
+                      ) : (
+                        <Typography
+                          variant="h4"
+                          sx={{
+                            fontWeight: 'bold',
+                            mb: 1,
+                            color: '#1E293B'
+                          }}
+                        >
+                          {selectedAccount === 'EUR' 
+                            ? `€${accountBalances.EUR.toFixed(2)}` 
+                            : `$${accountBalances.USD.toFixed(2)}`}
+                        </Typography>
+                      )
+                    )}
+                    
                     <Typography
                       variant="body2"
                       sx={{
                         color: '#415A77'
                       }}
                     >
-                      Manage your financial accounts and track their performance.
+                      Manage your financial accounts and track their performance
                     </Typography>
+                    
                     <Box sx={{ position: 'absolute', bottom: 5, right: 5, display: 'flex', gap: 1 }}>
+                      
                       <Tooltip title="Transactions" arrow placement="top">
                         <IconButton
                           onClick={(e) => handleMenuOpen(e, setAnchorEl1)}
@@ -218,30 +356,55 @@ const Dashboard = () => {
                       }}
                     >
                       <MenuItem 
+                        onClick={() => handleAccountSwitch('ALL')}
                         sx={{
                           display: 'flex',
                           gap: 1.5,
                           alignItems: 'center',
+                          backgroundColor: selectedAccount === 'ALL' ? '#E3F2FD' : 'transparent',
+                          '&:hover': {
+                            backgroundColor: '#E3F2FD'
+                          }
+                        }}
+                      >
+                        <IoWallet size={20} style={{ color: '#6f2dbd' }} />
+                        <Typography sx={{ fontWeight: selectedAccount === 'ALL' ? 'bold' : 'normal' }}>
+                          All Accounts
+                        </Typography>
+                      </MenuItem>
+                      <MenuItem 
+                        onClick={() => handleAccountSwitch('EUR')}
+                        sx={{
+                          display: 'flex',
+                          gap: 1.5,
+                          alignItems: 'center',
+                          backgroundColor: selectedAccount === 'EUR' ? '#E3F2FD' : 'transparent',
                           '&:hover': {
                             backgroundColor: '#E3F2FD'
                           }
                         }}
                       >
                         <IoLogoEuro size={20} style={{ color: '#6f2dbd' }} />
-                        <Typography>EURO</Typography>
+                        <Typography sx={{ fontWeight: selectedAccount === 'EUR' ? 'bold' : 'normal' }}>
+                          EUR Account
+                        </Typography>
                       </MenuItem>
                       <MenuItem 
+                        onClick={() => handleAccountSwitch('USD')}
                         sx={{
                           display: 'flex',
                           gap: 1.5,
                           alignItems: 'center',
+                          backgroundColor: selectedAccount === 'USD' ? '#E3F2FD' : 'transparent',
                           '&:hover': {
                             backgroundColor: '#E3F2FD'
                           }
                         }}
                       >
                         <IoLogoUsd size={20} style={{ color: '#6f2dbd' }} />
-                        <Typography>USD</Typography>
+                        <Typography sx={{ fontWeight: selectedAccount === 'USD' ? 'bold' : 'normal' }}>
+                          USD Account
+                        </Typography>
                       </MenuItem>
                     </Menu>
                     <Menu
@@ -427,46 +590,75 @@ const Dashboard = () => {
                     </Box>
                    
                     <Box sx={{ mt: 2 }}>
-                      {transactions.map((transaction) => (
-                        <Paper
-                          key={transaction.id}
-                          elevation={1}
-                          sx={{
-                            p: 2,
-                            mb: 1,
-                            borderRadius: 2,
-                            cursor: 'pointer',
-                            transition: 'all 0.3s ease',
-                            backgroundColor: '#f7faed',
-                            borderBottom: '1px solid #e8f6fd',
-                            '&:hover': {
-                              backgroundColor: '#E3F2FD',
-                              transform: 'translateX(5px)',
-                              boxShadow: 3
-                            }
-                          }}
-                        >
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Box sx={{ textAlign: 'left' }}>
-                              <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#0F172A' }}>
-                                {transaction.name}
-                              </Typography>
-                              <Typography variant="caption" sx={{ color: '#64748B' }}>
-                                {transaction.date}
+                      {isLoading ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
+                          <CircularProgressWithLabel />
+                        </Box>
+                      ) : isError ? (
+                        <Box sx={{ textAlign: 'center', py: 4 }}>
+                          <Typography variant="body1" sx={{ color: '#EF4444', mb: 2 }}>
+                            Failed to load transactions
+                          </Typography>
+                          <Typography 
+                            variant="body2" 
+                            sx={{ color: '#3B82F6', cursor: 'pointer', textDecoration: 'underline' }}
+                            onClick={fetchTransactions}
+                          >
+                            Try again
+                          </Typography>
+                        </Box>
+                      ) : filteredTransactions.length === 0 ? (
+                        <Box sx={{ textAlign: 'center', py: 4 }}>
+                          <Typography variant="body1" sx={{ color: '#64748B' }}>
+                            No transactions found for {selectedAccount === 'ALL' ? 'any account' : `${selectedAccount} account`}
+                          </Typography>
+                        </Box>
+                      ) : (
+                        filteredTransactions.slice(0, 5).map((transaction) => (
+                          <Paper
+                            key={transaction.id}
+                            elevation={1}
+                            sx={{
+                              p: 2,
+                              mb: 1,
+                              borderRadius: 2,
+                              cursor: 'pointer',
+                              transition: 'all 0.3s ease',
+                              backgroundColor: '#f7faed',
+                              borderBottom: '1px solid #e8f6fd',
+                              '&:hover': {
+                                backgroundColor: '#E3F2FD',
+                                transform: 'translateX(5px)',
+                                boxShadow: 3
+                              }
+                            }}
+                          >
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Box sx={{ textAlign: 'left' }}>
+                                <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#0F172A' }}>
+                                  {transaction.description || transaction.transactionType || 'Transaction'}
+                                </Typography>
+                                <Typography variant="caption" sx={{ color: '#64748B' }}>
+                                  {new Date(transaction.transactionDate).toLocaleDateString('en-US', { 
+                                    month: 'short', 
+                                    day: 'numeric', 
+                                    year: 'numeric' 
+                                  })} • {transaction.currency || transaction.fromCurrency || transaction.toCurrency || 'USD'}
+                                </Typography>
+                              </Box>
+                              <Typography 
+                                variant="body1" 
+                                sx={{ 
+                                  fontWeight: 'bold', 
+                                  color: transaction.transactionType === 'deposit' ? '#10B981' : '#EF4444' 
+                                }}
+                              >
+                                {transaction.transactionType === 'deposit' ? '+' : '-'}{transaction.currency || transaction.fromCurrency || 'USD'} {Math.abs(transaction.amount).toFixed(2)}
                               </Typography>
                             </Box>
-                            <Typography 
-                              variant="body1" 
-                              sx={{ 
-                                fontWeight: 'bold', 
-                                color: transaction.amount >= 0 ? '#10B981' : '#EF4444' 
-                              }}
-                            >
-                              {transaction.amount >= 0 ? '+' : ''}{transaction.amount < 0 ? '-' : ''}${Math.abs(transaction.amount).toFixed(2)}
-                            </Typography>
-                          </Box>
-                        </Paper>
-                      ))}
+                          </Paper>
+                        ))
+                      )}
                     </Box>
                    
                   </Paper>
@@ -495,7 +687,11 @@ const Dashboard = () => {
                     </Box>
 
                     <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                      <TinyLineChart />
+                      <Piechart 
+                        data={spendingData} 
+                        selectedAccount={selectedAccount}
+                        currency={selectedAccount === 'EUR' ? '€' : '$'}
+                      />
                     </Box>
 
                   </Paper>

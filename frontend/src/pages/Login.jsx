@@ -39,6 +39,8 @@ const Login = () => {
                 height: 220,
                 mx: 'auto',
                 mb: 2,
+                borderRadius: 2,
+                borderBottom: '4px solid #00B4D8',
               }}
             />
 

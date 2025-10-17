@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Typography, Paper } from '@mui/material';
 import TransactionsTable from '../components/transactions/TransactionsTable';
 
-const Transactions = () => {
+const Transactions = ({ user }) => {
   return (
     <Box sx={{ maxWidth: '1800px', margin: '0 auto', p: 2 }}>
       <Paper
@@ -36,7 +36,7 @@ const Transactions = () => {
         </Typography>
       </Paper>
 
-      <TransactionsTable />
+      <TransactionsTable user={user} />
     </Box>
   );
 };

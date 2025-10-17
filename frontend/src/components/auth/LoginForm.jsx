@@ -8,6 +8,7 @@ import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
+import { AiOutlineLogin } from "react-icons/ai";
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -198,21 +199,23 @@ const LoginForm = () => {
               <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
                 <Button
                   type="submit"
-                  variant="contained"
+                  //variant="contained"
                   disabled={submitting}
+                  startIcon={<AiOutlineLogin size={20} />}
                   sx={{
-                    backgroundColor: '#3B82F6',
-                    color: '#FFFFFF',
-                    px: 8,
+                    //backgroundColor: '#3B82F6',
+                    color: 'black',
+                    px: 2,
                     py: 1.5,
                     fontSize: '15px',
                     fontWeight: 600,
                     textTransform: 'none',
                     borderRadius: 2,
+                    borderBottom: '4px solid #00B4D8',
                     boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
                     transition: 'all 0.2s ease',
                     '&:hover': {
-                      backgroundColor: '#2563EB',
+                      //backgroundColor: '#2563EB',
                       boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                       transform: 'translateY(-1px)',
                     },
