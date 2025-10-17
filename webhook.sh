@@ -41,6 +41,50 @@ fi
 echo "🔍 Checking database connection..."
 # Add your database connectivity check here if needed
 
+# Check and configure firewall ports
+echo "🔥 Checking firewall configuration..."
+if command -v ufw &> /dev/null; then
+    echo "📝 Configuring UFW firewall..."
+    
+    # Check if UFW is active
+    if sudo ufw status | grep -q "Status: active"; then
+        echo "✅ UFW is active"
+        
+        # Allow port 1452 (frontend)
+        if ! sudo ufw status | grep -q "1452"; then
+            echo "🔓 Allowing port 1452 (frontend)..."
+            sudo ufw allow 1452/tcp
+        else
+            echo "✅ Port 1452 already allowed"
+        fi
+        
+        # Allow port 1453 (backend)
+        if ! sudo ufw status | grep -q "1453"; then
+            echo "🔓 Allowing port 1453 (backend)..."
+            sudo ufw allow 1453/tcp
+        else
+            echo "✅ Port 1453 already allowed"
+        fi
+        
+        echo "✅ Firewall configured successfully"
+    else
+        echo "ℹ️  UFW is not active. Ports are open by default."
+    fi
+else
+    echo "ℹ️  UFW not installed. Checking if ports are available..."
+    
+    # Check if ports are already in use
+    if netstat -tuln | grep -q ":1452 "; then
+        echo "⚠️  Port 1452 is already in use"
+        sudo fuser -k 1452/tcp 2>/dev/null || true
+    fi
+    
+    if netstat -tuln | grep -q ":1453 "; then
+        echo "⚠️  Port 1453 is already in use"
+        sudo fuser -k 1453/tcp 2>/dev/null || true
+    fi
+fi
+
 # Install backend dependencies
 echo "📦 Installing backend dependencies..."
 cd backend
