@@ -184,8 +184,8 @@ module.exports = {
     },
     {
       name: 'fintrack-frontend',
-      script: 'serve',
-      args: '-s frontend/build -p 1452',
+      script: 'npm',
+      args: 'run serve:frontend',
       cwd: './',
       instances: 1,
       autorestart: true,
@@ -203,9 +203,9 @@ module.exports = {
 };
 EOF
 
-# Install serve globally for serving the React build
+# Install serve locally for serving the React build
 echo "📦 Installing serve for frontend..."
-npm install -g serve
+npm install serve
 
 # Create logs directory
 mkdir -p logs
