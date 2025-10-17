@@ -12,13 +12,32 @@ if ! command -v node &> /dev/null; then
     exit 1
 fi
 
+# Verify Node.js version
+NODE_VERSION=$(node --version | cut -d'v' -f2 | cut -d'.' -f1)
+if [ "$NODE_VERSION" -lt 20 ]; then
+    echo "⚠️  Warning: Node.js version is v$NODE_VERSION, but v20+ is recommended."
+    echo "📝 To upgrade Node.js to v20, run:"
+    echo "   curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -"
+    echo "   sudo apt-get install -y nodejs"
+    read -p "Continue anyway? (y/n) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        exit 1
+    fi
+fi
+
 # Check if PM2 is installed
 if ! command -v pm2 &> /dev/null; then
     echo "📦 Installing PM2 globally..."
     npm install -g pm2
 fi
 
-# Check if PostgreSQL is accessible (you may need to adjust this for your setup)
+# Check if NestJS CLI is installed
+if ! command -v nest &> /dev/null; then
+    echo "📦 Installing NestJS CLI globally..."
+    npm install -g @nestjs/cli
+fi
+
 echo "🔍 Checking database connection..."
 # Add your database connectivity check here if needed
 
@@ -38,26 +57,45 @@ npm run build
 # Go back to root directory
 cd ..
 
-# Install frontend dependencies
-echo "📦 Installing frontend dependencies..."
-cd frontend
-npm install
-
-# Copy production environment file
-echo "📝 Setting up production environment..."
-cp .env.production .env
-
-# Build frontend for production
-echo "🔨 Building frontend for production..."
-npm run build
-
-# Go back to root directory
-cd ..
+# Check if frontend build exists
+if [ -d "frontend/build" ] && [ "$(ls -A frontend/build)" ]; then
+    echo "✅ Using pre-built frontend from repository..."
+else
+    echo "⚠️  Pre-built frontend not found. Building frontend..."
+    cd frontend
+    
+    # Install frontend dependencies
+    echo "📦 Installing frontend dependencies..."
+    npm install
+    
+    # Try to build with increased memory
+    echo "🔨 Building frontend (this may take a while)..."
+    if NODE_OPTIONS="--max-old-space-size=2048" npm run build; then
+        echo "✅ Frontend build completed successfully"
+    else
+        echo "❌ Frontend build failed. Trying with more memory..."
+        if NODE_OPTIONS="--max-old-space-size=4096" npm run build; then
+            echo "✅ Frontend build completed successfully"
+        else
+            echo "❌ Frontend build failed. Please build locally and push to GitHub."
+            echo "💡 Run these commands on your local machine:"
+            echo "   cd frontend"
+            echo "   npm install"
+            echo "   npm run build"
+            echo "   git add frontend/build"
+            echo "   git commit -m 'Add pre-built frontend'"
+            echo "   git push origin main"
+            exit 1
+        fi
+    fi
+    
+    cd ..
+fi
 
 # Create PM2 ecosystem file if it doesn't exist
 if [ ! -f ecosystem.config.js ]; then
     echo "📝 Creating PM2 ecosystem configuration..."
-    cat > ecosystem.config.js << EOF
+    cat > ecosystem.config.js << 'EOF'
 module.exports = {
   apps: [
     {
@@ -117,7 +155,11 @@ pm2 start ecosystem.config.js
 # Save PM2 configuration
 pm2 save
 
+# Setup PM2 to start on system reboot
+pm2 startup
+
 # Show status
+echo ""
 echo "📊 PM2 Status:"
 pm2 status
 
@@ -139,3 +181,7 @@ echo ""
 echo "✅ FinTrack deployment completed!"
 echo "🌐 Frontend: http://185.220.204.117:1452"
 echo "🔧 Backend API: http://185.220.204.117:1453"
+echo ""
+echo "🧪 Quick health check:"
+curl -s http://localhost:1453/api/auth/me > /dev/null && echo "✅ Backend is responding" || echo "❌ Backend health check failed"
+curl -s http://localhost:1452 > /dev/null && echo "✅ Frontend is responding" || echo "❌ Frontend health check failed"
