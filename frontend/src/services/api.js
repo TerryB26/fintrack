@@ -45,12 +45,15 @@ export const accountsAPI = {
         ...getAuthHeader(),
       },
     });
-    
     if (!response.ok) {
       throw new Error('Failed to fetch accounts');
     }
-    
-    return response.json();
+    const data = await response.json();
+    // If data.data exists and is an array, return it, else return data (array)
+    if (Array.isArray(data.data)) return data.data;
+    if (Array.isArray(data.accounts)) return data.accounts;
+    if (Array.isArray(data)) return data;
+    return [];
   },
 
   getAccountBalance: async (accountId) => {
@@ -106,14 +109,14 @@ export const transactionsAPI = {
     return response.json();
   },
 
-  exchange: async (fromAccountId, toAccountId, amount, exchangeRate, description) => {
+  exchange: async (fromAccountId, toAccountId, sourceAmount, targetAmount, exchangeRate, description) => {
     const response = await fetch(`${API_BASE_URL}/transactions/exchange`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         ...getAuthHeader(),
       },
-      body: JSON.stringify({ fromAccountId, toAccountId, amount, exchangeRate, description }),
+      body: JSON.stringify({ fromAccountId, toAccountId, sourceAmount, targetAmount, exchangeRate, description }),
     });
     
     if (!response.ok) {

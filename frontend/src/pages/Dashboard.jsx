@@ -60,9 +60,9 @@ const Dashboard = ({ user }) => {
     setBalanceLoading(true);
     try {
       const response = await accountsAPI.getAccounts();
-      console.log("🚀 ~ fetchAccountBalances ~ response:", response);
-      const accounts = response.data || [];
-      console.log("🚀 ~ fetchAccountBalances ~ accounts:", accounts);
+      // console.log("🚀 ~ fetchAccountBalances ~ response:", response);
+      const accounts = response || [];
+      // console.log("🚀 ~ fetchAccountBalances ~ accounts:", accounts);
       
       const balances = accounts.reduce((acc, account) => {
         const balance = parseFloat(account.balance) || 0;
@@ -156,21 +156,24 @@ const Dashboard = ({ user }) => {
     setModalTitle('');
   };
 
-  // console.log("🚀 ~ Dashboard ~ transactions:", transactions)
+  const refreshData = () => {
+    fetchTransactions();
+    fetchAccountBalances();
+  };
 
   const renderModalContent = () => {
     switch (modalTitle) {
       case 'Transfer':
         return (
           <>
-            <TransferForm handleClose={handleModalClose} />
+            <TransferForm handleClose={handleModalClose} user={user}/>
           </>
         );
       
       case 'Exchange':
         return (
           <> 
-            <ExchangeForm handleClose={handleModalClose} />
+            <ExchangeForm handleClose={handleModalClose} user={user} refreshData={refreshData}/>
           </>
         );
       
@@ -267,32 +270,34 @@ const Dashboard = ({ user }) => {
                       {selectedAccount === 'ALL' ? 'All Accounts' : selectedAccount === 'EUR' ? 'EUR Account' : 'USD Account'}
                     </Typography>
                     
-                    {selectedAccount !== 'ALL' && (
-                      balanceLoading ? (
-                        <Typography
-                          variant="h6"
-                          sx={{
-                            fontWeight: 'bold',
-                            mb: 1,
-                            color: '#415A77'
-                          }}
-                        >
-                          Loading...
-                        </Typography>
-                      ) : (
-                        <Typography
-                          variant="h4"
-                          sx={{
-                            fontWeight: 'bold',
-                            mb: 1,
-                            color: '#1E293B'
-                          }}
-                        >
-                          {selectedAccount === 'EUR' 
-                            ? `€${accountBalances.EUR.toFixed(2)}` 
-                            : `$${accountBalances.USD.toFixed(2)}`}
-                        </Typography>
-                      )
+                    {balanceLoading ? (
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          fontWeight: 'bold',
+                          mb: 1,
+                          color: '#415A77'
+                        }}
+                      >
+                        Loading...
+                      </Typography>
+                    ) : selectedAccount === 'ALL' ? (
+                      <>
+                                
+                      </>
+                    ) : (
+                      <Typography
+                        variant="h4"
+                        sx={{
+                          fontWeight: 'bold',
+                          mb: 1,
+                          color: '#1E293B'
+                        }}
+                      >
+                        {selectedAccount === 'EUR' 
+                          ? `€${accountBalances.EUR.toFixed(2)}` 
+                          : `$${accountBalances.USD.toFixed(2)}`}
+                      </Typography>
                     )}
                     
                     <Typography

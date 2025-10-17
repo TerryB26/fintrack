@@ -136,7 +136,7 @@ export class TransactionsService {
     }
   }
 
-  async exchange(userId: number, fromAccountId: number, toAccountId: number, amount: number, exchangeRate: number, description?: string) {
+  async exchange(userId: number, fromAccountId: number, toAccountId: number, amount: number, exchangeRate: number, targetAmount?: number, description?: string) {
     const client = await this.db.getClient();
 
     try {
@@ -170,7 +170,10 @@ export class TransactionsService {
         throw new BadRequestException('Insufficient funds');
       }
 
-      const convertedAmount = amount * exchangeRate;
+      // Use targetAmount provided by frontend if valid (pre-rounded), otherwise compute
+      let convertedAmount = Number.isFinite(Number(targetAmount)) && Number(targetAmount) > 0
+        ? Number(targetAmount)
+        : amount * exchangeRate;
 
       const transactionResult = await client.query(
         `INSERT INTO transactions (user_id, transaction_type, description, amount, currency, from_account_id, to_account_id, exchange_rate, converted_amount, status)

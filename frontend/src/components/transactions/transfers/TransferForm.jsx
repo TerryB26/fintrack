@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react';
 import * as yup from 'yup';
 import FormButtons from'../../general/FormButtons';
 import RequiredField from'../../general/RequiredField';
+import Swal from 'sweetalert2';
+import { transactionsAPI } from '../../../services/api';
 
 const TransferForm = ({ handleClose }) => {
 
@@ -42,7 +44,41 @@ const TransferForm = ({ handleClose }) => {
       currency: null,
     },
     validationSchema: validationSchema,
-    
+    onSubmit: async (values) => {
+      setSubmitting(true);
+      try {
+        const transferData = {
+          recipientAccountNumber: values.accountNumber,
+          amount: parseFloat(values.amount),
+          currency: values.currency.code,
+          description: `Transfer to ${values.recipient.name}`
+        };
+
+        await transactionsAPI.transfer(transferData);
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Transfer Successful!',
+          text: `Successfully transferred ${values.currency.symbol}${values.amount} to ${values.recipient.name}`,
+          confirmButtonColor: '#00B4D8',
+          confirmButtonText: 'OK'
+        });
+
+        handleClearForm();
+        handleClose();
+      } catch (error) {
+        console.error('Transfer error:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Transfer Failed',
+          text: error.response?.data?.message || 'An error occurred while processing your transfer. Please try again.',
+          confirmButtonColor: '#EF4444',
+          confirmButtonText: 'OK'
+        });
+      } finally {
+        setSubmitting(false);
+      }
+    }
   });
 
   const handleRecipientChange = (event, newValue) => {
